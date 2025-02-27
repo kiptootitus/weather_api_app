@@ -97,11 +97,15 @@ class WeatherApp(QWidget):
                     self.weather_label.setText(f"Temperature: {temp}°C\nDescription: {desc}")
                 else:
                     self.weather_label.setText("City not found!")
-            except Exception as e:
-                self.weather_label.setText("Error fetching weather data")
+            except Exception as e :
+                self.display_error(f"Request Error: \n {e}")
         else:
             self.weather_label.setText("Please enter a city name")
-
+    
+    def display_error(self, response):
+        self.weather_label.setStyleSheet("font-size: 20px")
+        self.weather_label.setText(response)
+      
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     weather_app = WeatherApp()
