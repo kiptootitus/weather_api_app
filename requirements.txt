@@ -1,0 +1,3 @@
+django
+PyQt5
+requests
