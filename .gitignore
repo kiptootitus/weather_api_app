@@ -1,0 +1,27 @@
+# Ignore all .env files anywhere in the project
+.env
+*.env
+
+# Python-specific ignores
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+venv/
+.env.local
+.env.development
+.env.test
+.env.production
+
+# IDE-specific ignores (if you use these)
+.idea/  # PyCharm
+.vscode/  # Visual Studio Code
+
+# OS-generated files
+.DS_Store  # macOS
+Thumbs.db  # Windows

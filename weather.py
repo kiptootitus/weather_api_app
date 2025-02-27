@@ -1,7 +1,14 @@
 import sys
+import os
+from dotenv import load_dotenv
 import requests
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QApplication, QWidget, QLineEdit, QPushButton
 from PyQt5.QtCore import Qt
+
+# Load environment variables at the start
+load_dotenv()
+# Note: Key name should match exactly what's in your .env file (case-sensitive)
+weather_key = os.environ.get('WEATHER_KEY')  # Changed 'weather_key' to 'WEATHER_KEY'
 
 class WeatherApp(QWidget):
     def __init__(self):
@@ -15,25 +22,22 @@ class WeatherApp(QWidget):
         # Create widgets
         self.city_input = QLineEdit(self)
         self.city_input.setPlaceholderText("Enter city name")
-        self.city_input.setObjectName("cityInput")  # Set object name for specific styling
+        self.city_input.setObjectName("cityInput")
         
         self.search_button = QPushButton("Get Weather", self)
-        self.search_button.setObjectName("searchButton")  # Set object name for specific styling
+        self.search_button.setObjectName("searchButton")
         self.search_button.clicked.connect(self.get_weather)
         
         self.weather_label = QLabel("Weather information will appear here")
-        self.weather_label.setObjectName("weatherLabel")  # Set object name for specific styling
+        self.weather_label.setObjectName("weatherLabel")
         self.weather_label.setAlignment(Qt.AlignCenter)
         
-        # Apply stylesheet to the entire widget
+        # Apply stylesheet (unchanged)
         self.setStyleSheet("""
-            /* Global styles */
             QWidget {
                 font-family: Arial, sans-serif;
                 background-color: #f0f4f8;
             }
-            
-            /* Style for QLineEdit (city input) */
             QLineEdit#cityInput {
                 padding: 10px;
                 font-size: 16px;
@@ -46,8 +50,6 @@ class WeatherApp(QWidget):
                 border-color: #2980b9;
                 background-color: #ecf0f1;
             }
-            
-            /* Style for QPushButton (search button) */
             QPushButton#searchButton {
                 background-color: #3498db;
                 color: white;
@@ -62,8 +64,6 @@ class WeatherApp(QWidget):
             QPushButton#searchButton:pressed {
                 background-color: #20638f;
             }
-            
-            /* Style for QLabel (weather display) */
             QLabel#weatherLabel {
                 font-size: 18px;
                 color: #2c3e50;
@@ -77,35 +77,41 @@ class WeatherApp(QWidget):
         layout.addWidget(self.city_input)
         layout.addWidget(self.search_button)
         layout.addWidget(self.weather_label)
-        layout.addStretch()  # Adds flexible space at the bottom
+        layout.addStretch()
         
-        # Set layout
         self.setLayout(layout)
     
     def get_weather(self):
         city = self.city_input.text()
         if city:
             try:
-                api_key = "e7f94475f0a798c607d435e94037bdcc"
+                api_key = os.environ.get('WEATHER_KEY')  # Changed to 'WEATHER_KEY'
+                if not api_key:
+                    self.weather_label.setText("API key not found!")
+                    return
+                    
                 url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
                 response = requests.get(url)
+                response.raise_for_status()  # Raises exception for HTTP errors
                 data = response.json()
                 
-                if data["cod"] == 200:
+                if data["cod"] == 200:  # Success code from OpenWeatherMap
                     temp = data["main"]["temp"]
                     desc = data["weather"][0]["description"]
                     self.weather_label.setText(f"Temperature: {temp}°C\nDescription: {desc}")
                 else:
-                    self.weather_label.setText("City not found!")
-            except Exception as e :
-                self.display_error(f"Request Error: \n {e}")
+                    self.weather_label.setText(f"Error: {data.get('message', 'City not found')}")
+            except requests.exceptions.RequestException as e:
+                self.display_error(f"Request Error: {str(e)}")
+            except Exception as e:
+                self.display_error(f"Unexpected Error: {str(e)}")
         else:
             self.weather_label.setText("Please enter a city name")
     
     def display_error(self, response):
-        self.weather_label.setStyleSheet("font-size: 20px")
+        self.weather_label.setStyleSheet("font-size: 20px")  # This overrides previous styling
         self.weather_label.setText(response)
-      
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     weather_app = WeatherApp()
